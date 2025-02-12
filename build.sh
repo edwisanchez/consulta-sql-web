@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Instalar el driver ODBC 17 para SQL Server en Linux (Debian/Ubuntu)
+# Descargar e instalar el driver ODBC 17 para SQL Server
 curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-sudo add-apt-repository "$(curl -s https://packages.microsoft.com/config/ubuntu/20.04/prod.list)"
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends \
-    unixodbc \
-    unixodbc-dev \
-    odbcinst \
-    msodbcsql17
+sudo apt update
+sudo apt install -y --no-install-recommends \
+    unixodbc unixodbc-dev odbcinst odbcinst1debian2 libodbc1 \
+    msodbcsql17 
 
-# Instalar dependencias de Python
+# Verifica que el driver esté instalado
+odbcinst -q -d
+
+# Instala las dependencias de Python
 pip install -r requirements.txt

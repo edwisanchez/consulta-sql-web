@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import pyodbc
+import os
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'  # Necesario para manejar sesiones
@@ -8,7 +9,11 @@ def conectar_bd(usuario, password):
     """Crea la conexión a SQL Server."""
     try:
         conn = pyodbc.connect(
-            f'DRIVER={{SQL Server}};SERVER=nx23.ddns.net,7433;DATABASE=alimentosmasivos;UID={usuario};PWD={password}'
+            f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+            f'SERVER=nx23.ddns.net,7433;'
+            f'DATABASE=alimentosmasivos;'
+            f'UID={usuario};'
+            f'PWD={password}'
         )
         return conn
     except Exception as e:
@@ -44,8 +49,8 @@ def consulta():
     cursor = conn.cursor()
     query = """
         SELECT 
-            s.articuloID AS Código_del_Artículo,
-            a.detalle AS Descripción,
+            s.articuloID AS Codigo_del_Articulo,
+            a.detalle AS Descripcion,
             s.saldocantidad,
             s.nombodega
         FROM [dbo].[fnInventSaldosInventario] (
@@ -59,4 +64,6 @@ def consulta():
     return render_template('consulta.html', datos=datos)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=True)
+

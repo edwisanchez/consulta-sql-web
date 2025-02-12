@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import pyodbc
-import os
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'  # Necesario para manejar sesiones
@@ -12,8 +11,7 @@ def conectar_bd(usuario, password):
             f'DRIVER={{ODBC Driver 17 for SQL Server}};'
             f'SERVER=nx23.ddns.net,7433;'
             f'DATABASE=alimentosmasivos;'
-            f'UID={usuario};'
-            f'PWD={password}'
+            f'UID={usuario};PWD={password}'
         )
         return conn
     except Exception as e:
@@ -46,22 +44,29 @@ def consulta():
     if isinstance(conn, str):  # Si hay error en la conexión
         return redirect(url_for('login'))
     
-    cursor = conn.cursor()
-    query = """
-        SELECT 
-            s.articuloID AS Codigo_del_Articulo,
-            a.detalle AS Descripcion,
-            s.saldocantidad,
-            s.nombodega
-        FROM [dbo].[fnInventSaldosInventario] (
-            GETDATE(), NULL, NULL, '0'
-        ) s
-        INNER JOIN articulo a ON a.codigo = s.articuloID
-    """
-    cursor.execute(query)
-    datos = cursor.fetchall()
+    try:
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                s.articuloID AS Codigo_del_Articulo,
+                a.detalle AS Descripcion,
+                s.saldocantidad,
+                s.nombodega
+            FROM [dbo].[fnInventSaldosInventario] (
+                GETDATE(), NULL, NULL, '0'
+            ) s
+            INNER JOIN articulo a ON a.codigo = s.articuloID
+        """
+        cursor.execute(query)
+        datos = cursor.fetchall()
+    except Exception as e:
+        return f"Error al ejecutar la consulta: {str(e)}"
     
     return render_template('consulta.html', datos=datos)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000, debug=True)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
